@@ -109,7 +109,7 @@ Before installing MosaicProt, ensure you have:
 > pip install mosaicprot
 
 2. For development/editable installation
-> git clone https://github.com/aliyurtsevenn/mosaicprot.git
+> git clone https://github.com/umutcakir/mosaicprot.git
 
 > cd mosaicprot
 
