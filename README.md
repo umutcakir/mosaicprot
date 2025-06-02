@@ -126,7 +126,7 @@ If you use MosaicProt in your research, please cite the following article:
 
 > Umut Çakır, Noujoud Gabed, Ali Yurtseven, Igor Kryvoruchko (2025).  
 > *A universal pipeline MosaicProt enables large-scale modeling and detection of chimeric protein sequences for studies on programmed ribosomal frameshifting.*  
-> bioRxiv (Cold Spring Harbor Laboratory). https://doi.org/XXXXXXX
+> bioRxiv (Cold Spring Harbor Laboratory). https://doi.org/10.1101/2025.05.29.656767 
 
 ---
 
