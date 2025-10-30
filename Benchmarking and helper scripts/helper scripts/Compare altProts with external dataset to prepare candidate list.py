@@ -74,8 +74,7 @@ def compare_fasta_files(alt_file, external_file, thr=0.9, threads=None):
     print(f"{len(hits)} altProts with ≥{int(thr * 100)}% identity are detected.")
     print(f"List written to: {output_file}")
 
-
-# ----- MAIN EXECUTION -----
+# MAIN EXECUTION
 if __name__ == "__main__":
     compare_fasta_files(
         ALT_PROTS_FILE,
@@ -85,3 +84,4 @@ if __name__ == "__main__":
     )
 
  
+
