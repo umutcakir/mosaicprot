@@ -84,6 +84,8 @@ The number of processors to use for parallel execution (default: 1) can be user-
 
 The flag [--repetition] helps deal with duplicated models. Such models arise from altORF-altORF pairs (as opposed to refORF-altORF pairs) where one of the ORFs is considered as a refORF and the other one as an altORF, and then the other way around. The “drop_all” option of handling such duplicated models can be useful when the goal is to exclude chimeric models generated from altORF-altORF pairs.
 
+Each generated model is assigned a detailed identifier that encodes its origin and modeling parameters. These are transcript locus, reading frame, nucleotide coordinates, ORF lengths, frameshift value, iteration number, and positional tag. For example: MtrunA17_Chr4g0073331_1F_415-774_360_MtrunA17_Chr4g0073331_3F_270-770_501_-2_iteration_1_3primeUTR_overlapping_with_refORF.  
+
 ---
 
 ## MosaicProt Installation Guide
