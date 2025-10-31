@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="mosaicprot",
-    version="0.1.6",
+    version="0.1.12",
     packages=find_packages(),
     install_requires=[
         # List your dependencies here
