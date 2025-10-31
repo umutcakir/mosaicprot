@@ -15,13 +15,12 @@ import shutil
 from functools import partial, reduce
 from itertools import chain
 from typing import Iterator
-
+from pathlib import Path
 
 warnings.filterwarnings("ignore", category=SyntaxWarning)
 warnings.filterwarnings("ignore", category=BiopythonWarning)
 warnings.filterwarnings("ignore", category=SyntaxWarning)
 warnings.filterwarnings("ignore", category=BiopythonWarning)
-
 
 def frameshifter(sequence, frame):
     if frame > 0:
@@ -65,27 +64,43 @@ def process_fasta_output(input_file, min_aa_lim, output_file, temp_file_name):
                             file.write(f'>{record.id}_{frame_name}_{start}-{end}_{abs(end - start + 1)}\n{aa_seq}\n')
                     except Exception as e:
                         log_step(temp_file_name, f"Error processing record {record.id}: {e}")
+
     except Exception as e:
         log_step(temp_file_name, f"Error in process_fasta_output: {e}")
         raise
+
+
 
 
 def run_alt_orf(mrna_file, proteome_file, alt_output, ref_output, temp_file_name):
     print("Finding alternative ORFs...")
     SeqDict_mrna = SeqIO.to_dict(SeqIO.parse(open(mrna_file), "fasta"))
     SeqDict_prot = SeqIO.to_dict(SeqIO.parse(open(proteome_file), "fasta"))
-    log_step(temp_file_name, f"mRNA and protein data has been read successfully...")
+    log_step(temp_file_name, "mRNA and protein data has been read successfully...")
+
+    written_ref = set()
+    written_alt = set()
 
     with open(ref_output, "w") as ref_file, open(alt_output, "w") as alt_file:
-        log_step(temp_file_name, f"Writing reference and alternative ORF files...")
+        log_step(temp_file_name, "Writing reference and alternative ORF files...")
+
         for prot_id, protein_seq in SeqDict_prot.items():
+            prot_id = str(prot_id) + "_"
             alt_list = [k for k in SeqDict_mrna if k.startswith(prot_id)]
+
             for alt_id in alt_list:
+                # Prevent writing same ID multiple times
+                if alt_id in written_ref or alt_id in written_alt:
+                    continue
+
                 alt_seq = SeqDict_mrna[alt_id].seq.strip()
                 if str(protein_seq.seq).strip() in str(alt_seq):
                     ref_file.write(f">{alt_id}\n{alt_seq}\n")
+                    written_ref.add(alt_id)
                 else:
                     alt_file.write(f">{alt_id}\n{alt_seq}\n")
+                    written_alt.add(alt_id)
+
 
 
 def generate_mosaic_proteins(input_file, refprots_file, altprots_file, transcript_file, temp_file_name, idx_num):
@@ -160,6 +175,8 @@ def generate_mosaic_proteins(input_file, refprots_file, altprots_file, transcrip
         string = '_'.join(list_string)
 
         return string
+
+
 
     def translate_all_frameshifted(sequence, skip_value=30, altprot_name="noname", refprot_name="noname",
                                    for_loop_number=90, length_second_part_raw=90, type_acc_to_position="not_specified"):
@@ -265,7 +282,7 @@ def generate_mosaic_proteins(input_file, refprots_file, altprots_file, transcrip
         temp_file_for_seq_store = open(filename, 'w+')
         to_file = ""
         to_file = to_file + str(
-            ">" + str(altprotname) + "_" + str(refprotname) + "_" + str(fiveorthreeprime) + "width_" + str(
+            ">" + str(altprotname) + "_" + str(refprotname) + "_" + str(fiveorthreeprime) + "nonoverlapping_distance_" + str(
                 width) + "\n" + str(str(firstsequence) + str(secondsequence)) + "\n")
         temp_file_for_seq_store.write(to_file)
         temp_file_for_seq_store.close()
@@ -288,6 +305,7 @@ def generate_mosaic_proteins(input_file, refprots_file, altprots_file, transcrip
         else:
             list_of_frameshifts = []
         return list_of_frameshifts
+
 
     def get_only_frame(list_of_frameshifts,
                        file=os.path.join(results_directory, f"temp_file_for_seq_store_{idx_num}.txt")):
@@ -360,7 +378,7 @@ def generate_mosaic_proteins(input_file, refprots_file, altprots_file, transcrip
                                                              secondsequence=altprot_sequence_first_20_aa,
                                                              altprotname=altprot, refprotname=refprot_transcript,
                                                              width=int(int(altprot_start) - int(refprot_end)),
-                                                             fiveorthreeprime="3'_UTR_")
+                                                             fiveorthreeprime="3primeUTR_")
 
                     if (int(AS1) >= int(RS1)) and (int(AS1) <= int(RS2)) and (int(AS2) >= int(RS1)) and (
                             int(AS2) >= int(RS2)):
@@ -394,7 +412,7 @@ def generate_mosaic_proteins(input_file, refprots_file, altprots_file, transcrip
                             translate_all_frameshifted(sequence=sequence, altprot_name=altprot,
                                                        refprot_name=refprot_transcript, skip_value=int(go_back),
                                                        for_loop_number=int(for_loop_number),
-                                                       type_acc_to_position="3'UTR_overlapped_with_CDS")
+                                                       type_acc_to_position="3primeUTR_overlapping_with_refORF")
                             aa_seq_should_be_included = str(
                                 translate(mrna_transcript_in_rna_code[coordinate_acc_to_altprot + 6:]))[:10]
                             list_of_frameshifts = determine_frame_from_file(common_seq=aa_seq_should_be_included)
@@ -436,7 +454,7 @@ def generate_mosaic_proteins(input_file, refprots_file, altprots_file, transcrip
                             translate_all_frameshifted(sequence=sequence, altprot_name=altprot,
                                                        refprot_name=refprot_transcript, skip_value=int(go_back),
                                                        for_loop_number=int(for_loop_number),
-                                                       type_acc_to_position="Within_5'_of_altprot")
+                                                       type_acc_to_position="Within_5prime_of_altORF")
                             aa_seq_should_be_included = str(
                                 translate(mrna_transcript_in_rna_code[coordinate_acc_to_altprot + 6:]))[:10]
                             list_of_frameshifts = determine_frame_from_file(common_seq=aa_seq_should_be_included)
@@ -479,7 +497,7 @@ def generate_mosaic_proteins(input_file, refprots_file, altprots_file, transcrip
                                                        refprot_name=refprot_transcript,
                                                        skip_value=int(go_back) - 60,
                                                        for_loop_number=int(for_loop_number),
-                                                       type_acc_to_position="Within_3'_of_altprot")
+                                                       type_acc_to_position="Within_3prime_of_altORF")
                             aa_seq_should_be_included = str(translate(mrna_transcript_in_rna_code[
                                                                       coordinate_acc_to_refprot + (
                                                                               altprot_end - altprot_start + 1) - 57:]))[
@@ -525,7 +543,7 @@ def generate_mosaic_proteins(input_file, refprots_file, altprots_file, transcrip
                             translate_all_frameshifted(sequence=sequence, altprot_name=altprot,
                                                        refprot_name=refprot_transcript, skip_value=int(go_back),
                                                        for_loop_number=int(for_loop_number),
-                                                       type_acc_to_position="5'UTR_overlapped_with_CDS")
+                                                       type_acc_to_position="5primeUTR_overlapping_with_refORF")
                             aa_seq_should_be_included = str(
                                 translate(mrna_transcript_in_rna_code[coordinate_acc_to_refprot + 6:]))[:10]
                             list_of_frameshifts = determine_frame_from_file(common_seq=aa_seq_should_be_included)
@@ -547,7 +565,7 @@ def generate_mosaic_proteins(input_file, refprots_file, altprots_file, transcrip
                                                              secondsequence=refprot_sequence_second_20_aa,
                                                              altprotname=altprot, refprotname=refprot_transcript,
                                                              width=int(int(refprot_start) - int(altprot_end)),
-                                                             fiveorthreeprime="5'_UTR_")
+                                                             fiveorthreeprime="5primeUTR_")
 
                     if (int(AS1) <= int(RS1)) and (int(AS1) <= int(RS2)) and (int(AS2) >= int(RS1)) and (
                             int(AS2) >= int(RS2)):
@@ -582,7 +600,7 @@ def generate_mosaic_proteins(input_file, refprots_file, altprots_file, transcrip
                             translate_all_frameshifted(sequence=sequence, altprot_name=altprot,
                                                        refprot_name=refprot_transcript, skip_value=int(go_back),
                                                        for_loop_number=int(for_loop_number),
-                                                       type_acc_to_position="Spanned_5'_of_altprot")
+                                                       type_acc_to_position="Spanning_5prime_of_altORF")
                             aa_seq_should_be_included = str(
                                 translate(mrna_transcript_in_rna_code[coordinate_acc_to_refprot + 6:]))[:10]
                             list_of_frameshifts = determine_frame_from_file(common_seq=aa_seq_should_be_included)
@@ -625,7 +643,7 @@ def generate_mosaic_proteins(input_file, refprots_file, altprots_file, transcrip
                                                        refprot_name=refprot_transcript,
                                                        skip_value=int(go_back) - 60,
                                                        for_loop_number=int(for_loop_number),
-                                                       type_acc_to_position="Spanned_3'_of_altprot")
+                                                       type_acc_to_position="Spanning_3prime_of_altORF")
                             aa_seq_should_be_included = str(translate(mrna_transcript_in_rna_code[
                                                                       coordinate_acc_to_altprot + (
                                                                               refprot_end - refprot_start + 1) - 27:]))[
@@ -831,13 +849,26 @@ def generate_mosaic_proteins(input_file, refprots_file, altprots_file, transcrip
     to_file_for_requested_file_filtered = ""
 
     for requested_item in requested_file_to_list:
-        first_item_id = join_string(str(requested_item).split("_")[0:5])
-        second_item_id = join_string(str(requested_item).split("_")[5:10])
+
+        splited_ = requested_item.split("F_")
+        a_ = splited_[0]
+
+        name_ = a_.rsplit("_", 1)[0]
+        name_split_ = requested_item.split(name_)
+        first_item_id = name_ + name_split_[1][:-1]
+        second_item_id = name_ + name_split_[2]
+
+        first_len = len(first_item_id.split("_"))
+        second_item_id = "_".join(second_item_id.split("_")[0:first_len])
+
+
         first_item_seq = str(
             sequence_archive[str(list(filter(lambda x: x.startswith(first_item_id), sequence_archive))[0])].seq)
+
         second_item_seq = str(
             sequence_archive[str(list(filter(lambda x: x.startswith(second_item_id), sequence_archive))[0])].seq)
         requested_item_seq = str(requested_file[requested_item].seq)
+
         if requested_item_seq not in first_item_seq:
             if requested_item_seq not in second_item_seq:
                 to_file_for_requested_file_filtered = to_file_for_requested_file_filtered + str(
@@ -861,7 +892,6 @@ def generate_mosaic_proteins(input_file, refprots_file, altprots_file, transcrip
 
     with open(file_path, "w") as outfile:
         SeqIO.write(updated_records, outfile, "fasta")
-
 
 
 def worker_process(args):
@@ -954,7 +984,6 @@ def log_step(temp_file_name, message, overwrite=False):
     with open(temp_file_name, mode) as temp_file:
         temp_file.write(f"{message}\n")
 
-
 def format_time(seconds):
     hours = int(seconds // 3600)
     minutes = int((seconds % 3600) // 60)
@@ -972,6 +1001,12 @@ def main():
     parser = argparse.ArgumentParser(
         description="MosaicProt CLI: Detect ORFs, Find Alternative ORFs, Generate Mosaic Proteins",
         formatter_class=argparse.ArgumentDefaultsHelpFormatter
+    )
+    # Add version before defining subparsers
+    parser.add_argument(
+        '-v', '--version',
+        action='version',
+        version='%(prog)s 0.1.12'
     )
     subparsers = parser.add_subparsers(dest="command", required=True)
 
@@ -1037,6 +1072,7 @@ def main():
                      f"Alternative ORFs saved to {args.output_alt_file}, reference saved to {args.output_ref_file}")
 
         elif args.command == "simulate_chimeric_proteins":
+
             log_step(log_file_name, "Forming chimeric proteins...")
             simulate_chimeric_proteins(
                 args.candidate_altProt_list,
@@ -1242,7 +1278,6 @@ def main():
         sys.exit(1)
 
     print(f"Process completed. Logs written to {log_file_name}")
-
 def run():
     main()
 
