@@ -1,3 +1,7 @@
+<p align="center">
+  <img width="716" height="303" alt="mosaicprot-high-resolution-logo" src="https://github.com/user-attachments/assets/c67cf0c5-7f35-4e3f-9e61-37bb7ac4af1c" />
+</p>
+
 # What is MosaicProt?
 
 The purpose of MosaicProt is to enable the de novo detection of chimeric peptide sequences produced by programmed ribosomal frameshifting (PRF). The tool can be used for the identification of individual PRF events and candidates for mosaic translation, i.e., sequences produced by multiple PRF events from a single transcript (hence the name MosaicProt). The tool can model potential chimeric sequences by analyzing the positional relationships between overlapping or closely spaced ORFs. It supports cases where altORFs:
@@ -11,6 +15,7 @@ The simulation engine systematically explores multiple reading frames and frames
 - Detect chimeric peptides and proteins from all possible ORFs of a defined length range in a transcriptome. A user can provide either a spliced transcriptome or precursor sequences, depending on the scope of a study.
 - Separate canonical (refProt) and non-canonical (altProt) sequences by comparing to a reference proteome. The reference proteome can be defined by a user or imported from a database.
 - Simulate chimeric protein sequences by combining segments of refProts and altProts. It can also model chimeric sequences from overlapping altProts.
+
 
 ## Available Commands
 
