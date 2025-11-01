@@ -705,7 +705,13 @@ def generate_mosaic_proteins(input_file, refprots_file, altprots_file, transcrip
     input_file = f"your_final_result_{idx_num}.fasta"
     output_file = f"your_final_result_before_clean_{idx_num}.fasta"
 
+
+    if not os.path.exists(input_file):
+        print(f"Skipping nonexistent output file for chunk {idx_num}")
+        log_step(temp_file_name, f"Chunk {idx_num} produced no output file — skipping.")
+        return
     i = 1
+
     with open(input_file, "r") as infile, open(output_file, "w") as outfile:
         for line in infile:
             if line.startswith(">"):
@@ -962,13 +968,20 @@ def simulate_chimeric_proteins(input_file, refprots_file, altprots_file, transcr
         with open(combined_chunk, "w") as f:
             f.write("\n".join(always_be_together + list(should_be_splitted)))
         list_of_chunks = [combined_chunk]
+
     else:
-        list_of_chunks.append(always_be_together_path)
-
-        split_file(list_of_altProts_path, results_directory, processor_num - 1)
-
+        # Check if always_be_together file has any lines
+        always_nonempty = os.path.getsize(always_be_together_path) > 0
+        if always_nonempty:
+            # Keep one CPU for always_be_together group
+            list_of_chunks.append(always_be_together_path)
+            split_file(list_of_altProts_path, results_directory, processor_num - 1)
+        else:
+            # Use all CPUs since always_be_together is empty
+            split_file(list_of_altProts_path, results_directory, processor_num)
+        # Collect generated chunk files
         list_of_chunks.extend(glob.glob(os.path.join(results_directory, 'chunk_*.txt')))
-
+  
     with Pool(processor_num) as pool:
         args = [
             (chunk, refprots_file, altprots_file, transcript_file, temp_file_name, idx)
@@ -1006,7 +1019,7 @@ def main():
     parser.add_argument(
         '-v', '--version',
         action='version',
-        version='%(prog)s 0.1.12'
+        version='%(prog)s 0.1.13'
     )
     subparsers = parser.add_subparsers(dest="command", required=True)
 
@@ -1195,8 +1208,8 @@ def main():
                     for header, seq in records:
                         f.write(f'>{header}\n{seq}\n')
 
-            input_fasta = final_combined_file  # Replace with your input file path
-            output_fasta = final_combined_file  # Replace with your desired output file path
+            input_fasta = final_combined_file  
+            output_fasta = final_combined_file
             option = args.repetition  # Choose 'keep_first', 'keep_all', or 'drop_all'
 
             records = read_fasta(input_fasta)
@@ -1278,6 +1291,7 @@ def main():
         sys.exit(1)
 
     print(f"Process completed. Logs written to {log_file_name}")
+
 def run():
     main()
 
