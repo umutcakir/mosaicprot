@@ -5,6 +5,17 @@ import shutil
 import time
 import csv
 
+
+# Ensure that transcript IDs and peptide IDs match.
+# If they are different, change the peptide FASTA headers so that the transcript ID is used as the identifier
+# (You can also change transcriptome file so that peptide ID is used as the identifier).
+# For example:
+# zcat module2/Homo_sapiens.GRCh38.pep.all.fa.gz | \
+# awk '/^>/{match($0, /transcript:([^ ]+)/, a); print ">"a[1]; next} {print}' | \
+# gzip > module2/Homo_sapiens.GRCh38.pep.all.fa.gz.tmp && \
+# mv module2/Homo_sapiens.GRCh38.pep.all.fa.gz.tmp module2/Homo_sapiens.GRCh38.pep.all.fa.gz
+
+
 base_dir = Path.cwd()  # current working directory
 csv_file = base_dir / "module1_ORF_stats.csv"
 
