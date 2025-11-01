@@ -8,8 +8,8 @@
 #SBATCH --exclusive
 
 
-#python run_code_module1.py
-#python run_code_module2.py
+python run_code_module1.py
+python run_code_module2.py
 python run_code_candidate_list.py
 python run_code_module3.py
 
