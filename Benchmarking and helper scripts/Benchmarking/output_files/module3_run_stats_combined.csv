@@ -1,4 +1,4 @@
-Species,Processor,Duration_sec,Output_size_MB,Num_transcripts
+Species,Processor,Duration_sec,Output_size_MB,Num_models
 Caenorhabditis elegans,1,917.13,3.13,24912
 Caenorhabditis elegans,2,474.51,3.13,24912
 Caenorhabditis elegans,3,319.83,3.13,24912
@@ -767,3 +767,4 @@ Homo sapiens,125,2096.22,2.16,15445
 Homo sapiens,126,2158.3,2.16,15445
 Homo sapiens,127,2199.41,2.16,15445
 Homo sapiens,128,2191.48,2.16,15445
+
