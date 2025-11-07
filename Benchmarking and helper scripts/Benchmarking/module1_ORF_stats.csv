@@ -1,0 +1,7 @@
+Species,Duration_sec,Output_size_MB,Num_ORFs
+Caenorhabditis elegans,51.31,46.27,425422
+Arabidopsis thaliana,71.4,63.23,607019
+Danio rerio,91.04,106.61,969567
+Gallus gallus,85.49,139.25,1263005
+Medicago truncatula,63.38,44.26,452779
+Homo sapiens,571.84,675.28,6369002
